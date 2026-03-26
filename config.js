@@ -19,7 +19,7 @@ const TOUR_CONFIG = {
     student_center: {
       title: "Student Center",
       // 📷 Replace this path with your actual 360° photo
-      panorama: "https://pannellum.org/images/alma.jpg",
+      panorama: "images/newman_lobby_4k.jpg",
       hotSpots: [
 
         // ── Navigate to next location ──
