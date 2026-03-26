@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>DePaul Virtual Campus Tour</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/pannellum/2.5.6/pannellum.css"/>
+  <link rel="stylesheet" href="styles.css"/>
+</head>
+<body>
+
+  <!-- Header -->
+  <header>
+    <div class="header-inner">
+      <div class="logo">
+        <span class="logo-dep">De</span><span class="logo-paul">Paul</span>
+        <span class="logo-tag">Virtual Campus Tour</span>
+      </div>
+      <nav id="scene-nav">
+        <button class="nav-btn active" onclick="loadScene('student_center')">Student Center</button>
+        <!-- Add more buttons here as you add more scenes -->
+      </nav>
+    </div>
+  </header>
+
+  <!-- Main Viewer -->
+  <main>
+    <div id="panorama"></div>
+    <div id="scene-title" class="scene-title">Student Center</div>
+
+    <!-- Info Panel — slides in from right when a hotspot is clicked -->
+    <div id="info-panel" class="info-panel hidden">
+      <button class="close-btn" onclick="closePanel()">✕</button>
+      <div id="panel-content"></div>
+    </div>
+  </main>
+
+  <!-- Help Finder Bar -->
+  <section class="help-finder">
+    <span class="help-label">I need help with:</span>
+    <div class="help-buttons">
+      <button onclick="showHelp('money')">💰 Money</button>
+      <button onclick="showHelp('classes')">📚 Classes</button>
+      <button onclick="showHelp('housing')">🏠 Housing</button>
+      <button onclick="showHelp('health')">🧠 Mental Health</button>
+      <button onclick="showHelp('jobs')">💼 Jobs</button>
+    </div>
+  </section>
+
+  <!-- Help Finder Modal -->
+  <div id="help-modal" class="modal hidden">
+    <div class="modal-box">
+      <button class="close-btn" onclick="closeModal()">✕</button>
+      <div id="modal-content"></div>
+    </div>
+  </div>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pannellum/2.5.6/pannellum.js"></script>
+  <script src="config.js"></script>
+  <script src="help.js"></script>
+  <script src="tour.js"></script>
+</body>
+</html>

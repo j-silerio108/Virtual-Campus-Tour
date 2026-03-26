@@ -1,0 +1,11 @@
+{
+  "editor.formatOnSave": true,
+  "editor.defaultFormatter": "esbenp.prettier-vscode",
+  "liveServer.settings.port": 5500,
+  "liveServer.settings.donotShowInfoMsg": true,
+  "files.associations": {
+    "*.js": "javascript"
+  },
+  "editor.tabSize": 2,
+  "editor.wordWrap": "on"
+}
