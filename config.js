@@ -19,7 +19,7 @@ const TOUR_CONFIG = {
     student_center: {
       title: "Student Center",
       // 📷 Replace this path with your actual 360° photo
-      panorama: "images/student_center.jpg",
+      panorama: "https://pannellum.org/images/alma.jpg",
       hotSpots: [
 
         // ── Navigate to next location ──
@@ -39,7 +39,7 @@ const TOUR_CONFIG = {
           type: "info",
           text: "Dean of Students — Watch Intro",
           cssClass: "hotspot-video",
-          clickHandlerFunc: openHotspot,
+          clickHandlerFunc: function(args) { openHotspot(args); },
           clickHandlerArgs: {
             kind: "video",
             office: "Dean of Students",
@@ -57,7 +57,7 @@ const TOUR_CONFIG = {
           type: "info",
           text: "Financial Aid Office",
           cssClass: "hotspot-info",
-          clickHandlerFunc: openHotspot,
+          clickHandlerFunc: function(args) { openHotspot(args); },
           clickHandlerArgs: {
             kind: "info",
             office: "Financial Aid",
@@ -74,7 +74,7 @@ const TOUR_CONFIG = {
           type: "info",
           text: "Get directions: Academic Advising",
           cssClass: "hotspot-directions",
-          clickHandlerFunc: openHotspot,
+          clickHandlerFunc: function(args) { openHotspot(args); },
           clickHandlerArgs: {
             kind: "directions",
             office: "Academic Advising",
