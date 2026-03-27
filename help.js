@@ -1,7 +1,10 @@
 // ─────────────────────────────────────────────
 //  DePaul Virtual Campus Tour — help.js
-//  Help Finder modal logic
+//  Help Finder data and modal class.
 // ─────────────────────────────────────────────
+
+// ── Data ──────────────────────────────────────
+// Add new categories here — no code changes needed elsewhere.
 
 const HELP_DATA = {
   money: {
@@ -51,36 +54,58 @@ const HELP_DATA = {
   }
 };
 
-// ── Show Help Finder modal ──
-function showHelp(category) {
-  const data = HELP_DATA[category];
-  if (!data) return;
+// ── HelpFinder ────────────────────────────────
 
-  const modal = document.getElementById('help-modal');
-  const content = document.getElementById('modal-content');
+class HelpFinder {
+  #modal;
+  #content;
+  #data;
 
-  content.innerHTML = `
-    <div class="modal-emoji">${data.emoji}</div>
-    <div class="modal-title">You need help with: ${data.need}</div>
-    <div class="modal-office">→ Go to: <strong>${data.office}</strong></div>
-    <p class="modal-desc">${data.description}</p>
-    <div class="modal-detail">
-      <strong>📍 Location:</strong> ${data.location}<br>
-      <strong>🕐 Hours:</strong> ${data.hours}<br>
-      <strong>📧 Contact:</strong> ${data.contact}
-    </div>
-  `;
+  /**
+   * @param {string} modalId    ID of the modal backdrop element
+   * @param {string} contentId  ID of the content container inside the modal
+   * @param {object} data       HELP_DATA — keyed by category string
+   */
+  constructor(modalId, contentId, data) {
+    this.#modal   = document.getElementById(modalId);
+    this.#content = document.getElementById(contentId);
+    this.#data    = data;
+  }
 
-  modal.classList.remove('hidden');
+  init() {
+    document.querySelectorAll('[data-help]').forEach(btn => {
+      btn.addEventListener('click', () => this.show(btn.dataset.help));
+    });
+
+    this.#modal.querySelector('.close-btn')
+      .addEventListener('click', () => this.close());
+
+    this.#modal.addEventListener('click', e => {
+      if (e.target === this.#modal) this.close();
+    });
+  }
+
+  show(category) {
+    const data = this.#data[category];
+    if (!data) return;
+
+    this.#content.innerHTML = `
+      <div class="modal-emoji">${data.emoji}</div>
+      <div class="modal-title">You need help with: ${data.need}</div>
+      <div class="modal-office">→ Go to: <strong>${data.office}</strong></div>
+      <p class="modal-desc">${data.description}</p>
+      <div class="modal-detail">
+        <strong>📍 Location:</strong> ${data.location}<br>
+        <strong>🕐 Hours:</strong> ${data.hours}<br>
+        <strong>📧 Contact:</strong> ${data.contact}
+      </div>
+    `;
+
+    this.#modal.classList.remove('hidden');
+  }
+
+  close() {
+    this.#modal.classList.add('hidden');
+    this.#content.innerHTML = '';
+  }
 }
-
-// ── Close Help modal ──
-function closeModal() {
-  document.getElementById('help-modal').classList.add('hidden');
-  document.getElementById('modal-content').innerHTML = '';
-}
-
-// Close modal if user clicks the backdrop
-document.getElementById('help-modal').addEventListener('click', function(e) {
-  if (e.target === this) closeModal();
-});

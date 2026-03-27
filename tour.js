@@ -1,131 +1,127 @@
 // ─────────────────────────────────────────────
 //  DePaul Virtual Campus Tour — tour.js
-//  Initializes Pannellum and handles panel UI
+//  InfoPanel and TourApp classes.
 // ─────────────────────────────────────────────
 
-let viewer = null;
+// ── Info Panel ──────────────────────────────
 
-// ── Initialize the viewer on page load ──
-window.addEventListener('load', () => {
-  loadScene(TOUR_CONFIG.default.firstScene);
-});
+class InfoPanel {
+  #panel;
+  #content;
 
-// ── Load a scene by ID ──
-function loadScene(sceneId) {
-  const scene = TOUR_CONFIG.scenes[sceneId];
-  if (!scene) {
-    console.warn('Scene not found:', sceneId);
-    return;
+  constructor(panelId, contentId) {
+    this.#panel   = document.getElementById(panelId);
+    this.#content = document.getElementById(contentId);
+
+    // InfoPanel owns its own close button — TourApp has no business wiring it
+    this.#panel.querySelector('.close-btn')
+      .addEventListener('click', () => this.hide());
   }
 
-  // Update scene title overlay
-  document.getElementById('scene-title').textContent = scene.title;
-
-  // Update active nav button
-  document.querySelectorAll('.nav-btn').forEach(btn => {
-    btn.classList.toggle('active', btn.textContent.trim() === scene.title);
-  });
-
-  // Close any open panel
-  closePanel();
-
-  // Destroy existing viewer if present
-  if (viewer) {
-    viewer.destroy();
-    viewer = null;
+  show(html) {
+    this.#content.innerHTML = html;
+    this.#panel.classList.remove('hidden');
   }
 
-  // Build Pannellum config
-  const pannellumConfig = {
-    type: 'equirectangular',
-    panorama: scene.panorama,
-    autoLoad: true,
-    showControls: true,
-    hotSpots: scene.hotSpots.map(hs => {
-      // For scene-type hotspots, use Pannellum's native scene switching
-      if (hs.type === 'scene') {
-        return {
-          pitch: hs.pitch,
-          yaw: hs.yaw,
-          type: 'scene',
-          sceneId: hs.sceneId,
-          text: hs.text,
-          cssClass: hs.cssClass || 'hotspot-navigate'
-        };
-      }
-      // For all info hotspots, use our custom click handler
+  hide() {
+    this.#panel.classList.add('hidden');
+    this.#content.innerHTML = '';
+  }
+}
+
+// ── Tour App ─────────────────────────────────
+
+class TourApp {
+  #config;
+  #registry;
+  #panel;
+  #viewer    = null;
+  #container;   // Pannellum mount element
+  #titleEl;     // Scene title overlay element
+  #navSelector; // CSS selector for nav buttons
+
+  /**
+   * @param {object}                  config
+   * @param {HotspotRendererRegistry} registry
+   * @param {InfoPanel}               panel
+   * @param {object}                  domConfig   Injected DOM references — no hardcoded IDs
+   * @param {string}                  domConfig.containerId  ID of the Pannellum mount element
+   * @param {string}                  domConfig.titleId      ID of the scene title overlay
+   * @param {string}                  domConfig.navSelector  CSS selector for nav buttons
+   */
+  constructor(config, registry, panel, {
+    containerId  = 'panorama',
+    titleId      = 'scene-title',
+    navSelector  = '.nav-btn[data-scene]'
+  } = {}) {
+    this.#config      = config;
+    this.#registry    = registry;
+    this.#panel       = panel;
+    this.#container   = document.getElementById(containerId);
+    this.#titleEl     = document.getElementById(titleId);
+    this.#navSelector = navSelector;
+  }
+
+  init() {
+    document.querySelectorAll(this.#navSelector).forEach(btn => {
+      btn.addEventListener('click', () => this.loadScene(btn.dataset.scene));
+    });
+
+    this.loadScene(this.#config.default.firstScene);
+  }
+
+  loadScene(sceneId) {
+    const scene = this.#config.scenes[sceneId];
+    if (!scene) {
+      console.warn('Scene not found:', sceneId);
+      return;
+    }
+
+    this.#titleEl.textContent = scene.title;
+
+    document.querySelectorAll(this.#navSelector).forEach(btn => {
+      btn.classList.toggle('active', btn.dataset.scene === sceneId);
+    });
+
+    this.#panel.hide();
+
+    if (this.#viewer) {
+      this.#viewer.destroy();
+      this.#viewer = null;
+    }
+
+    this.#viewer = pannellum.viewer(this.#container.id, {
+      type:         'equirectangular',
+      panorama:     scene.panorama,
+      autoLoad:     true,
+      showControls: true,
+      hotSpots:     scene.hotSpots.map(hs => this.#buildHotspot(hs))
+    });
+  }
+
+  // ── Private ──────────────────────────────
+
+  #buildHotspot(hs) {
+    if (hs.type === 'scene') {
       return {
-        pitch: hs.pitch,
-        yaw: hs.yaw,
-        type: 'info',
-        text: hs.text,
-        cssClass: hs.cssClass || 'hotspot-info',
-        clickHandlerFunc: hs.clickHandlerFunc || null,
-        clickHandlerArgs: hs.clickHandlerArgs || {}
+        pitch:    hs.pitch,
+        yaw:      hs.yaw,
+        type:     'scene',
+        sceneId:  hs.sceneId,
+        text:     hs.text,
+        cssClass: hs.cssClass || 'hotspot-navigate'
       };
-    })
-  };
+    }
 
-  viewer = pannellum.viewer('panorama', pannellumConfig);
-}
-
-// ── Open info panel with hotspot content ──
-function openHotspot(args) {
-  const panel = document.getElementById('info-panel');
-  const content = document.getElementById('panel-content');
-
-  let html = '';
-
-  if (args.kind === 'video') {
-    html = `
-      <div class="panel-office-name">${args.office}</div>
-      <span class="panel-type-badge">📹 Office Intro</span>
-      <div class="panel-video">
-        <video controls>
-          <source src="${args.videoSrc}" type="video/mp4">
-          Your browser does not support video playback.
-        </video>
-      </div>
-      <p class="panel-description">${args.description}</p>
-      <div class="panel-hours">
-        <h4>Hours</h4>
-        <p>${args.hours}</p>
-      </div>
-      <p class="panel-contact">📧 ${args.contact}</p>
-    `;
+    // clickHandlerFunc injected here — config.js stays pure data
+    return {
+      pitch:            hs.pitch,
+      yaw:              hs.yaw,
+      type:             'info',
+      text:             hs.text,
+      cssClass:         hs.cssClass || 'hotspot-info',
+      clickHandlerFunc: (args) => this.#panel.show(this.#registry.render(args)),
+      clickHandlerArgs: hs.clickHandlerArgs || {}
+    };
   }
-
-  else if (args.kind === 'info') {
-    html = `
-      <div class="panel-office-name">${args.office}</div>
-      <span class="panel-type-badge">ℹ️ Office Info</span>
-      <p class="panel-description">${args.description}</p>
-      <div class="panel-hours">
-        <h4>Hours</h4>
-        <p>${args.hours}</p>
-      </div>
-      <p class="panel-contact">📧 ${args.contact}</p>
-    `;
-  }
-
-  else if (args.kind === 'directions') {
-    const steps = args.directions.map((step, i) => `<li>${step}</li>`).join('');
-    html = `
-      <div class="panel-office-name">${args.office}</div>
-      <span class="panel-type-badge">🗺️ Directions</span>
-      <div class="panel-directions">
-        <h4>From your current location</h4>
-        <ol>${steps}</ol>
-      </div>
-    `;
-  }
-
-  content.innerHTML = html;
-  panel.classList.remove('hidden');
-}
-
-// ── Close info panel ──
-function closePanel() {
-  document.getElementById('info-panel').classList.add('hidden');
-  document.getElementById('panel-content').innerHTML = '';
 }

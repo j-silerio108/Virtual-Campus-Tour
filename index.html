@@ -17,8 +17,8 @@
         <span class="logo-tag">Virtual Campus Tour</span>
       </div>
       <nav id="scene-nav">
-        <button class="nav-btn active" onclick="loadScene('student_center')">Student Center</button>
-        <!-- Add more buttons here as you add more scenes -->
+        <button class="nav-btn active" data-scene="student_center">Student Center</button>
+        <!-- Add more nav buttons here — just set data-scene="your_scene_id" -->
       </nav>
     </div>
   </header>
@@ -30,7 +30,7 @@
 
     <!-- Info Panel — slides in from right when a hotspot is clicked -->
     <div id="info-panel" class="info-panel hidden">
-      <button class="close-btn" onclick="closePanel()">✕</button>
+      <button class="close-btn">✕</button>
       <div id="panel-content"></div>
     </div>
   </main>
@@ -39,25 +39,36 @@
   <section class="help-finder">
     <span class="help-label">I need help with:</span>
     <div class="help-buttons">
-      <button onclick="showHelp('money')">💰 Money</button>
-      <button onclick="showHelp('classes')">📚 Classes</button>
-      <button onclick="showHelp('housing')">🏠 Housing</button>
-      <button onclick="showHelp('health')">🧠 Mental Health</button>
-      <button onclick="showHelp('jobs')">💼 Jobs</button>
+      <button data-help="money">💰 Money</button>
+      <button data-help="classes">📚 Classes</button>
+      <button data-help="housing">🏠 Housing</button>
+      <button data-help="health">🧠 Mental Health</button>
+      <button data-help="jobs">💼 Jobs</button>
     </div>
   </section>
 
   <!-- Help Finder Modal -->
   <div id="help-modal" class="modal hidden">
     <div class="modal-box">
-      <button class="close-btn" onclick="closeModal()">✕</button>
+      <button class="close-btn">✕</button>
       <div id="modal-content"></div>
     </div>
   </div>
 
+  <!-- Scripts — load order:
+       1. Pannellum  (external viewer library)
+       2. hotspots   (registry + built-in renderers)
+       3. config     (pure data — no JS dependencies)
+       4. help       (HELP_DATA + HelpFinder class)
+       5. tour       (InfoPanel + TourApp classes)
+       6. app        (composition root — wires everything)
+  -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/pannellum/2.5.6/pannellum.js"></script>
+  <script src="hotspots.js"></script>
   <script src="config.js"></script>
   <script src="help.js"></script>
   <script src="tour.js"></script>
+  <script src="app.js"></script>
+
 </body>
 </html>
