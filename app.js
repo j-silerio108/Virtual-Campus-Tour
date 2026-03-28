@@ -7,9 +7,10 @@
 
 document.addEventListener('DOMContentLoaded', () => {
 
-  const panel = new InfoPanel('info-panel', 'panel-content');
+  const panel   = new InfoPanel('info-panel', 'panel-content');
+  const adapter = new PannellumAdapter();
 
-  const tour = new TourApp(TOUR_CONFIG, hotspotRegistry, panel, {
+  const tour = new TourApp(TOUR_CONFIG, hotspotRegistry, panel, adapter, {
     containerId: 'panorama',
     titleId:     'scene-title',
     navSelector: '.nav-btn[data-scene]'

@@ -225,6 +225,44 @@ main {
   border: none;
 }
 
+/* ── Pannellum Hotspots ── */
+.pnlm-hotspot-base {
+  width: 32px !important;
+  height: 32px !important;
+  border-radius: 50%;
+  background: var(--blue) !important;
+  border: 2px solid rgba(255,255,255,0.85);
+  box-shadow: 0 2px 8px rgba(0,0,0,0.45);
+  cursor: pointer;
+}
+
+.pnlm-hotspot-base:hover {
+  background: var(--red) !important;
+  border-color: #fff;
+}
+
+/* Tooltip label */
+.pnlm-hotspot-base span {
+  position: absolute;
+  bottom: 38px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(0,0,0,0.75);
+  color: #fff;
+  font-size: 0.78rem;
+  font-family: Arial, sans-serif;
+  padding: 0.25rem 0.6rem;
+  border-radius: 4px;
+  white-space: nowrap;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.15s;
+}
+
+.pnlm-hotspot-base:hover span {
+  opacity: 1;
+}
+
 /* ── Help Finder Bar ── */
 .help-finder {
   background: var(--blue-dark);

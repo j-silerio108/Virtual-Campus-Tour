@@ -58,13 +58,15 @@
   <!-- Scripts — load order:
        1. Pannellum  (external viewer library)
        2. hotspots   (registry + built-in renderers)
-       3. config     (pure data — no JS dependencies)
-       4. help       (HELP_DATA + HelpFinder class)
-       5. tour       (InfoPanel + TourApp classes)
-       6. app        (composition root — wires everything)
+       3. viewer     (ViewerAdapter base + PannellumAdapter)
+       4. config     (pure data — no JS dependencies)
+       5. help       (HELP_DATA + HelpFinder class)
+       6. tour       (InfoPanel + TourApp classes)
+       7. app        (composition root — wires everything)
   -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/pannellum/2.5.6/pannellum.js"></script>
   <script src="hotspots.js"></script>
+  <script src="viewer.js"></script>
   <script src="config.js"></script>
   <script src="help.js"></script>
   <script src="tour.js"></script>

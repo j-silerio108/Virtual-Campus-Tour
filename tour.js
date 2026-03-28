@@ -13,7 +13,6 @@ class InfoPanel {
     this.#panel   = document.getElementById(panelId);
     this.#content = document.getElementById(contentId);
 
-    // InfoPanel owns its own close button — TourApp has no business wiring it
     this.#panel.querySelector('.close-btn')
       .addEventListener('click', () => this.hide());
   }
@@ -35,21 +34,22 @@ class TourApp {
   #config;
   #registry;
   #panel;
-  #viewer    = null;
-  #container;   // Pannellum mount element
-  #titleEl;     // Scene title overlay element
-  #navSelector; // CSS selector for nav buttons
+  #adapter;     // ViewerAdapter — no knowledge of which library is used
+  #container;
+  #titleEl;
+  #navSelector;
 
   /**
    * @param {object}                  config
    * @param {HotspotRendererRegistry} registry
    * @param {InfoPanel}               panel
-   * @param {object}                  domConfig   Injected DOM references — no hardcoded IDs
-   * @param {string}                  domConfig.containerId  ID of the Pannellum mount element
-   * @param {string}                  domConfig.titleId      ID of the scene title overlay
-   * @param {string}                  domConfig.navSelector  CSS selector for nav buttons
+   * @param {ViewerAdapter}           adapter     Swappable viewer implementation
+   * @param {object}                  domConfig
+   * @param {string}                  domConfig.containerId
+   * @param {string}                  domConfig.titleId
+   * @param {string}                  domConfig.navSelector
    */
-  constructor(config, registry, panel, {
+  constructor(config, registry, panel, adapter, {
     containerId  = 'panorama',
     titleId      = 'scene-title',
     navSelector  = '.nav-btn[data-scene]'
@@ -57,6 +57,7 @@ class TourApp {
     this.#config      = config;
     this.#registry    = registry;
     this.#panel       = panel;
+    this.#adapter     = adapter;
     this.#container   = document.getElementById(containerId);
     this.#titleEl     = document.getElementById(titleId);
     this.#navSelector = navSelector;
@@ -84,44 +85,14 @@ class TourApp {
     });
 
     this.#panel.hide();
+    this.#adapter.destroy();
 
-    if (this.#viewer) {
-      this.#viewer.destroy();
-      this.#viewer = null;
-    }
-
-    this.#viewer = pannellum.viewer(this.#container.id, {
-      type:         'equirectangular',
-      panorama:     scene.panorama,
-      autoLoad:     true,
-      showControls: true,
-      hotSpots:     scene.hotSpots.map(hs => this.#buildHotspot(hs))
-    });
-  }
-
-  // ── Private ──────────────────────────────
-
-  #buildHotspot(hs) {
-    if (hs.type === 'scene') {
-      return {
-        pitch:    hs.pitch,
-        yaw:      hs.yaw,
-        type:     'scene',
-        sceneId:  hs.sceneId,
-        text:     hs.text,
-        cssClass: hs.cssClass || 'hotspot-navigate'
-      };
-    }
-
-    // clickHandlerFunc injected here — config.js stays pure data
-    return {
-      pitch:            hs.pitch,
-      yaw:              hs.yaw,
-      type:             'info',
-      text:             hs.text,
-      cssClass:         hs.cssClass || 'hotspot-info',
-      clickHandlerFunc: (args) => this.#panel.show(this.#registry.render(args)),
-      clickHandlerArgs: hs.clickHandlerArgs || {}
-    };
+    this.#adapter.mount(
+      this.#container.id,
+      scene.panorama,
+      scene.hotSpots,
+      (args) => this.#panel.show(this.#registry.render(args)),
+      (sceneId) => this.loadScene(sceneId)
+    );
   }
 }

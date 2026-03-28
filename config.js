@@ -24,8 +24,8 @@ const TOUR_CONFIG = {
 
         // ── Navigate to next location ──
         {
-          pitch: -5,
-          yaw: 90,
+          pitch: 1.67,
+          yaw: 76.78,
           type: "scene",
           sceneId: "student_center", // 🔁 Replace with the next scene ID when you add one
           text: "Exit to Quad →",
