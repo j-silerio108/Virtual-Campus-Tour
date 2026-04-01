@@ -66,6 +66,26 @@ class PannellumAdapter extends ViewerAdapter {
           el.addEventListener('click', () => onHotspotClick(hs.clickHandlerArgs));
         }
       });
+
+      // Live pitch/yaw overlay for hotspot placement (dev helper)
+      let overlay = document.getElementById('pyw-overlay');
+      if (!overlay) {
+        overlay = document.createElement('div');
+        overlay.id = 'pyw-overlay';
+        overlay.style.cssText = [
+          'position:fixed', 'bottom:12px', 'left:12px',
+          'background:rgba(0,0,0,0.6)', 'color:#fff',
+          'font:13px/1.4 monospace', 'padding:6px 10px',
+          'border-radius:6px', 'z-index:9999', 'pointer-events:none'
+        ].join(';');
+        document.body.appendChild(overlay);
+      }
+
+      const container = document.getElementById(containerId);
+      container.addEventListener('mousemove', () => {
+        overlay.textContent =
+          `pitch: ${this.#instance.getPitch().toFixed(2)}  yaw: ${this.#instance.getYaw().toFixed(2)}`;
+      });
     });
   }
 
@@ -74,5 +94,13 @@ class PannellumAdapter extends ViewerAdapter {
       this.#instance.destroy();
       this.#instance = null;
     }
+  }
+
+  getPitchYaw() {
+    if (!this.#instance) return null;
+    return {
+      pitch: this.#instance.getPitch(),
+      yaw:   this.#instance.getYaw()
+    };
   }
 }
