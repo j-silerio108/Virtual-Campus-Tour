@@ -38,6 +38,7 @@ export class PannellumAdapter extends ViewerAdapter {
   #instance          = null;
   #container         = null;
   #mouseMoveHandler  = null;
+  #hotspotListeners  = [];   // [{el, handler}] — cleaned up on destroy
 
   mount(containerId, panorama, hotSpots, onHotspotClick, onNavigate) {
     // Build hotspots without clickHandlerFunc — Pannellum silently drops
@@ -65,9 +66,13 @@ export class PannellumAdapter extends ViewerAdapter {
         const el = document.querySelector(`.hs-idx-${i}`);
         if (!el) return;
         if (hs.type === 'scene') {
-          el.addEventListener('click', () => onNavigate(hs.sceneId));
+          const handler = () => onNavigate(hs.sceneId);
+          el.addEventListener('click', handler);
+          this.#hotspotListeners.push({ el, handler });
         } else if (hs.clickHandlerArgs) {
-          el.addEventListener('click', () => onHotspotClick(hs.clickHandlerArgs));
+          const handler = () => onHotspotClick(hs.clickHandlerArgs);
+          el.addEventListener('click', handler);
+          this.#hotspotListeners.push({ el, handler });
         } else {
           console.warn(`Hotspot ${i} ("${hs.text}") has no clickHandlerArgs — click ignored`);
         }
@@ -99,6 +104,9 @@ export class PannellumAdapter extends ViewerAdapter {
   }
 
   destroy() {
+    this.#hotspotListeners.forEach(({ el, handler }) => el.removeEventListener('click', handler));
+    this.#hotspotListeners = [];
+
     if (this.#container && this.#mouseMoveHandler) {
       this.#container.removeEventListener('mousemove', this.#mouseMoveHandler);
       this.#mouseMoveHandler = null;

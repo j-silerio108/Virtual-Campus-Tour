@@ -37,11 +37,14 @@ export class TourApp {
   #config;
   #registry;
   #panel;
-  #adapter;     // ViewerAdapter — no knowledge of which library is used
+  #adapter;        // ViewerAdapter — no knowledge of which library is used
   #container;
   #titleEl;
   #navEl;
   #navSelector;
+  #loadingPromises  = new Map();  // sceneId → in-flight load promise (race guard)
+  #clickHandler     = null;
+  #popstateHandler  = null;
 
   /**
    * @param {object}                  config
@@ -123,22 +126,36 @@ export class TourApp {
   init() {
     this.#buildNav();
 
-    document.addEventListener('click', (e) => {
+    this.#clickHandler = (e) => {
       if (!e.target.closest('.nav-building')) {
         this.#navEl?.querySelectorAll('.nav-building.open').forEach(el => {
           el.classList.remove('open');
           el.querySelector('.nav-building-btn').setAttribute('aria-expanded', 'false');
         });
       }
-    });
+    };
+    document.addEventListener('click', this.#clickHandler);
 
-    window.addEventListener('popstate', (e) => {
+    this.#popstateHandler = (e) => {
       const sceneId = e.state?.scene ?? this.#config.default.firstScene;
       this.loadScene(sceneId, { pushState: false });
-    });
+    };
+    window.addEventListener('popstate', this.#popstateHandler);
 
     const initial = new URLSearchParams(location.search).get('scene') ?? this.#config.default.firstScene;
     this.loadScene(initial, { pushState: false });
+  }
+
+  destroy() {
+    if (this.#clickHandler) {
+      document.removeEventListener('click', this.#clickHandler);
+      this.#clickHandler = null;
+    }
+    if (this.#popstateHandler) {
+      window.removeEventListener('popstate', this.#popstateHandler);
+      this.#popstateHandler = null;
+    }
+    this.#adapter.destroy();
   }
 
   async loadScene(sceneId, { pushState = true } = {}) {
@@ -151,10 +168,23 @@ export class TourApp {
         this.#panel.show('<p style="color:#fff;padding:1rem">Sorry, this location could not be loaded.</p>');
         return;
       }
-      // Browser caches the module — same file is never fetched twice
-      const scenes = await entry.load();
-      this.#registry.validate(scenes);
-      Object.assign(this.#config.scenes, scenes);
+      // Reuse an in-flight promise so rapid clicks don't double-fetch
+      if (!this.#loadingPromises.has(sceneId)) {
+        this.#loadingPromises.set(
+          sceneId,
+          entry.load().finally(() => this.#loadingPromises.delete(sceneId))
+        );
+      }
+      try {
+        const scenes = await this.#loadingPromises.get(sceneId);
+        this.#registry.validate(scenes);
+        Object.assign(this.#config.scenes, scenes);
+      } catch (err) {
+        console.error('Failed to load scene:', sceneId, err);
+        this.#titleEl.textContent = 'Scene unavailable';
+        this.#panel.show('<p style="color:#fff;padding:1rem">Sorry, this location could not be loaded. Please try again.</p>');
+        return;
+      }
     }
 
     const scene = this.#config.scenes[sceneId];
