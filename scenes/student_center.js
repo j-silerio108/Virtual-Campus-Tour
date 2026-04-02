@@ -3,7 +3,7 @@
 //  Add all Student Center rooms/floors here.
 // ─────────────────────────────────────────────
 
-const STUDENT_CENTER_SCENES = {
+export const STUDENT_CENTER_SCENES = {
 
   student_center: {
     title: "Student Center",
@@ -149,7 +149,7 @@ const STUDENT_CENTER_SCENES = {
         yaw: 13,
         type: "scene",
         sceneId: "student_center_east_stairs",
-        text: "East Stars",
+        text: "East Stairs",
         cssClass: "hotspot-navigate"
       },
       {

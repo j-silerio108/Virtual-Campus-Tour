@@ -10,16 +10,11 @@
 //       before TourApp is initialised.
 // ─────────────────────────────────────────────
 
-// Module-scoped helper — shared by all renderers without exposing it
-// on any class prototype. Private fields can't be inherited, so this
-// is the correct place for shared pure utilities.
-function officeHeader(args) {
-  return `<div class="panel-office-name">${args.office}</div>`;
-}
+import { t, escapeHtml } from './panel-templates.js';
 
 // ── Abstract base ──────────────────────────────────────────────────
 
-class HotspotRenderer {
+export class HotspotRenderer {
   /**
    * @param {object} args  The clickHandlerArgs from config.js
    * @returns {string}     HTML string to inject into the info panel
@@ -31,42 +26,42 @@ class HotspotRenderer {
 
 // ── Built-in renderers ─────────────────────────────────────────────
 
-class VideoHotspotRenderer extends HotspotRenderer {
+export class VideoHotspotRenderer extends HotspotRenderer {
   render(args) {
     return `
-      ${officeHeader(args)}
-      <span class="panel-type-badge">📹 Office Intro</span>
+      ${t.header(args.office)}
+      ${t.badge('📹', 'Office Intro')}
       <div class="panel-video">
         <video controls>
-          <source src="${args.videoSrc}" type="video/mp4">
+          <source src="${escapeHtml(args.videoSrc)}" type="video/mp4">
           Your browser does not support video playback.
         </video>
       </div>
-      <p class="panel-description">${args.description}</p>
-      <div class="panel-hours"><h4>Hours</h4><p>${args.hours}</p></div>
-      <p class="panel-contact">📧 ${args.contact}</p>
+      ${t.description(args.description)}
+      ${t.hours(args.hours)}
+      ${t.contact(args.contact)}
     `;
   }
 }
 
-class InfoHotspotRenderer extends HotspotRenderer {
+export class InfoHotspotRenderer extends HotspotRenderer {
   render(args) {
     return `
-      ${officeHeader(args)}
-      <span class="panel-type-badge">ℹ️ Office Info</span>
-      <p class="panel-description">${args.description}</p>
-      <div class="panel-hours"><h4>Hours</h4><p>${args.hours}</p></div>
-      <p class="panel-contact">📧 ${args.contact}</p>
+      ${t.header(args.office)}
+      ${t.badge('ℹ️', 'Office Info')}
+      ${t.description(args.description)}
+      ${t.hours(args.hours)}
+      ${t.contact(args.contact)}
     `;
   }
 }
 
-class DirectionsHotspotRenderer extends HotspotRenderer {
+export class DirectionsHotspotRenderer extends HotspotRenderer {
   render(args) {
-    const steps = args.directions.map(step => `<li>${step}</li>`).join('');
+    const steps = args.directions.map(step => `<li>${escapeHtml(step)}</li>`).join('');
     return `
-      ${officeHeader(args)}
-      <span class="panel-type-badge">🗺️ Directions</span>
+      ${t.header(args.office)}
+      ${t.badge('🗺️', 'Directions')}
       <div class="panel-directions">
         <h4>From your current location</h4>
         <ol>${steps}</ol>
@@ -77,7 +72,7 @@ class DirectionsHotspotRenderer extends HotspotRenderer {
 
 // ── Registry ───────────────────────────────────────────────────────
 
-class HotspotRendererRegistry {
+export class HotspotRendererRegistry {
   #renderers = new Map();
 
   /**
@@ -109,7 +104,7 @@ class HotspotRendererRegistry {
 }
 
 // ── Singleton — pre-loaded with the three built-in types ──────────
-const hotspotRegistry = new HotspotRendererRegistry()
+export const hotspotRegistry = new HotspotRendererRegistry()
   .register('video',      new VideoHotspotRenderer())
   .register('info',       new InfoHotspotRenderer())
   .register('directions', new DirectionsHotspotRenderer());

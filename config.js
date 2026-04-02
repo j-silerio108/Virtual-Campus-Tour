@@ -1,18 +1,14 @@
 // ─────────────────────────────────────────────
 //  DePaul Virtual Campus Tour — Main Config
 //
-//  This file sets global defaults and assembles
-//  all scenes from the individual building files
-//  in the /scenes folder.
-//
-//  To add a new building:
-//    1. Create scenes/your_building.js
-//    2. Add a <script> tag for it in index.html
-//       (before this file's <script> tag)
-//    3. Spread it into TOUR_CONFIG.scenes below
+//  Global defaults only. Scene assembly is
+//  handled by scenes/index.js — edit that file
+//  when adding a new building.
 // ─────────────────────────────────────────────
 
-const TOUR_CONFIG = {
+import { ALL_SCENES } from './scenes/index.js';
+
+export const TOUR_CONFIG = {
 
   // ── Default starting scene ──
   default: {
@@ -21,11 +17,6 @@ const TOUR_CONFIG = {
     showControls: true
   },
 
-  // ── All scenes, assembled from /scenes files ──
-  scenes: {
-    ...STUDENT_CENTER_SCENES,
-    // ...LIBRARY_SCENES,
-    // ...QUAD_SCENES,
-  }
+  scenes: ALL_SCENES
 
 };

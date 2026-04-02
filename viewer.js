@@ -7,9 +7,11 @@
 //  create a new adapter — do not touch TourApp.
 // ─────────────────────────────────────────────
 
+const DEBUG = new URLSearchParams(location.search).get('debug') === 'true';
+
 // ── Abstract base ──────────────────────────────────────────────────
 
-class ViewerAdapter {
+export class ViewerAdapter {
   /**
    * Mount the viewer into the DOM.
    * @param {string}   containerId     ID of the mount element
@@ -32,8 +34,10 @@ class ViewerAdapter {
 
 // ── Pannellum implementation ───────────────────────────────────────
 
-class PannellumAdapter extends ViewerAdapter {
-  #instance = null;
+export class PannellumAdapter extends ViewerAdapter {
+  #instance          = null;
+  #container         = null;
+  #mouseMoveHandler  = null;
 
   mount(containerId, panorama, hotSpots, onHotspotClick, onNavigate) {
     // Build hotspots without clickHandlerFunc — Pannellum silently drops
@@ -67,40 +71,41 @@ class PannellumAdapter extends ViewerAdapter {
         }
       });
 
-      // Live pitch/yaw overlay for hotspot placement (dev helper)
-      let overlay = document.getElementById('pyw-overlay');
-      if (!overlay) {
-        overlay = document.createElement('div');
-        overlay.id = 'pyw-overlay';
-        overlay.style.cssText = [
-          'position:fixed', 'bottom:12px', 'left:12px',
-          'background:rgba(0,0,0,0.6)', 'color:#fff',
-          'font:13px/1.4 monospace', 'padding:6px 10px',
-          'border-radius:6px', 'z-index:9999', 'pointer-events:none'
-        ].join(';');
-        document.body.appendChild(overlay);
-      }
+      // Live pitch/yaw overlay — only active when ?debug=true
+      if (DEBUG) {
+        let overlay = document.getElementById('pyw-overlay');
+        if (!overlay) {
+          overlay = document.createElement('div');
+          overlay.id = 'pyw-overlay';
+          overlay.style.cssText = [
+            'position:fixed', 'bottom:12px', 'left:12px',
+            'background:rgba(0,0,0,0.6)', 'color:#fff',
+            'font:13px/1.4 monospace', 'padding:6px 10px',
+            'border-radius:6px', 'z-index:9999', 'pointer-events:none'
+          ].join(';');
+          document.body.appendChild(overlay);
+        }
 
-      const container = document.getElementById(containerId);
-      container.addEventListener('mousemove', () => {
-        overlay.textContent =
-          `pitch: ${this.#instance.getPitch().toFixed(2)}  yaw: ${this.#instance.getYaw().toFixed(2)}`;
-      });
+        this.#container = document.getElementById(containerId);
+        this.#mouseMoveHandler = () => {
+          overlay.textContent =
+            `pitch: ${this.#instance.getPitch().toFixed(2)}  yaw: ${this.#instance.getYaw().toFixed(2)}`;
+        };
+        this.#container.addEventListener('mousemove', this.#mouseMoveHandler);
+      }
     });
   }
 
   destroy() {
+    if (this.#container && this.#mouseMoveHandler) {
+      this.#container.removeEventListener('mousemove', this.#mouseMoveHandler);
+      this.#mouseMoveHandler = null;
+      this.#container = null;
+    }
     if (this.#instance) {
       this.#instance.destroy();
       this.#instance = null;
     }
   }
 
-  getPitchYaw() {
-    if (!this.#instance) return null;
-    return {
-      pitch: this.#instance.getPitch(),
-      yaw:   this.#instance.getYaw()
-    };
-  }
 }

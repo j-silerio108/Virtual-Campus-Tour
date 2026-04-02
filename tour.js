@@ -5,13 +5,16 @@
 
 // ── Info Panel ──────────────────────────────
 
-class InfoPanel {
+export class InfoPanel {
   #panel;
   #content;
 
   constructor(panelId, contentId) {
     this.#panel   = document.getElementById(panelId);
     this.#content = document.getElementById(contentId);
+
+    if (!this.#panel)   throw new Error(`InfoPanel: element #${panelId} not found`);
+    if (!this.#content) throw new Error(`InfoPanel: element #${contentId} not found`);
 
     this.#panel.querySelector('.close-btn')
       .addEventListener('click', () => this.hide());
@@ -30,7 +33,7 @@ class InfoPanel {
 
 // ── Tour App ─────────────────────────────────
 
-class TourApp {
+export class TourApp {
   #config;
   #registry;
   #panel;
@@ -61,6 +64,9 @@ class TourApp {
     this.#container   = document.getElementById(containerId);
     this.#titleEl     = document.getElementById(titleId);
     this.#navSelector = navSelector;
+
+    if (!this.#container) throw new Error(`TourApp: element #${containerId} not found`);
+    if (!this.#titleEl)   throw new Error(`TourApp: element #${titleId} not found`);
   }
 
   init() {
