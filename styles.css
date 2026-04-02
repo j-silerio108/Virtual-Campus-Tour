@@ -49,9 +49,12 @@ header {
   font-family: Arial, sans-serif;
 }
 
-nav { display: flex; gap: 0.5rem; }
+nav { display: flex; gap: 0.5rem; flex-wrap: wrap; }
 
-.nav-btn {
+/* ── Building dropdown trigger ── */
+.nav-building { position: relative; }
+
+.nav-building-btn {
   background: transparent;
   border: 1px solid rgba(255,255,255,0.4);
   color: rgba(255,255,255,0.85);
@@ -62,7 +65,50 @@ nav { display: flex; gap: 0.5rem; }
   font-family: Arial, sans-serif;
   transition: background 0.2s, color 0.2s;
 }
-.nav-btn:hover,
+.nav-building-btn::after {
+  content: ' ▾';
+  font-size: 0.7rem;
+}
+.nav-building-btn:hover,
+.nav-building.open .nav-building-btn {
+  background: var(--white);
+  color: var(--blue);
+  font-weight: bold;
+}
+
+/* ── Dropdown panel ── */
+.nav-dropdown {
+  display: none;
+  position: absolute;
+  top: calc(100% + 4px);
+  left: 0;
+  background: var(--blue-dark);
+  border: 1px solid rgba(255,255,255,0.2);
+  border-radius: 4px;
+  min-width: 180px;
+  z-index: 250;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.4);
+  overflow: hidden;
+}
+.nav-building.open .nav-dropdown { display: block; }
+
+/* ── Floor/room buttons inside dropdown ── */
+.nav-btn {
+  display: block;
+  width: 100%;
+  background: transparent;
+  border: none;
+  border-bottom: 1px solid rgba(255,255,255,0.08);
+  color: rgba(255,255,255,0.85);
+  padding: 0.5rem 1rem;
+  text-align: left;
+  cursor: pointer;
+  font-size: 0.82rem;
+  font-family: Arial, sans-serif;
+  transition: background 0.15s;
+}
+.nav-btn:last-child { border-bottom: none; }
+.nav-btn:hover { background: rgba(255,255,255,0.1); }
 .nav-btn.active {
   background: var(--white);
   color: var(--blue);

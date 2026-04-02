@@ -76,20 +76,62 @@ export class TourApp {
   #buildNav() {
     if (!this.#navEl) return;
     this.#navEl.innerHTML = '';
+
+    // Group scenes by building
+    const buildings = new Map();
     for (const [sceneId, scene] of Object.entries(this.#config.scenes)) {
-      if (!scene.nav) continue;
-      const btn = document.createElement('button');
-      btn.className = 'nav-btn';
-      btn.dataset.scene = sceneId;
-      btn.textContent = scene.title;
-      btn.addEventListener('click', () => this.loadScene(sceneId));
-      this.#navEl.appendChild(btn);
+      if (!scene.building) continue;
+      if (!buildings.has(scene.building)) buildings.set(scene.building, []);
+      buildings.get(scene.building).push({ sceneId, scene });
+    }
+
+    for (const [buildingName, scenes] of buildings) {
+      const wrapper = document.createElement('div');
+      wrapper.className = 'nav-building';
+
+      const trigger = document.createElement('button');
+      trigger.className = 'nav-building-btn';
+      trigger.textContent = buildingName;
+      trigger.setAttribute('aria-expanded', 'false');
+      trigger.addEventListener('click', () => {
+        const open = wrapper.classList.toggle('open');
+        trigger.setAttribute('aria-expanded', String(open));
+      });
+
+      const dropdown = document.createElement('div');
+      dropdown.className = 'nav-dropdown';
+
+      for (const { sceneId, scene } of scenes) {
+        const btn = document.createElement('button');
+        btn.className = 'nav-btn';
+        btn.dataset.scene = sceneId;
+        btn.textContent = scene.floor ?? scene.title;
+        btn.addEventListener('click', () => {
+          wrapper.classList.remove('open');
+          trigger.setAttribute('aria-expanded', 'false');
+          this.loadScene(sceneId);
+        });
+        dropdown.appendChild(btn);
+      }
+
+      wrapper.appendChild(trigger);
+      wrapper.appendChild(dropdown);
+      this.#navEl.appendChild(wrapper);
     }
   }
 
   init() {
     this.#registry.validate(this.#config);
     this.#buildNav();
+
+    document.addEventListener('click', (e) => {
+      if (!e.target.closest('.nav-building')) {
+        this.#navEl?.querySelectorAll('.nav-building.open').forEach(el => {
+          el.classList.remove('open');
+          el.querySelector('.nav-building-btn').setAttribute('aria-expanded', 'false');
+        });
+      }
+    });
 
     window.addEventListener('popstate', (e) => {
       const sceneId = e.state?.scene ?? this.#config.default.firstScene;
