@@ -77,15 +77,15 @@ export class TourApp {
     if (!this.#navEl) return;
     this.#navEl.innerHTML = '';
 
-    // Group scenes by building
+    // Group nav-eligible entries by building (reads sceneIndex, not scenes)
     const buildings = new Map();
-    for (const [sceneId, scene] of Object.entries(this.#config.scenes)) {
-      if (!scene.building) continue;
-      if (!buildings.has(scene.building)) buildings.set(scene.building, []);
-      buildings.get(scene.building).push({ sceneId, scene });
+    for (const [sceneId, entry] of Object.entries(this.#config.sceneIndex)) {
+      if (!entry.building) continue;
+      if (!buildings.has(entry.building)) buildings.set(entry.building, []);
+      buildings.get(entry.building).push({ sceneId, entry });
     }
 
-    for (const [buildingName, scenes] of buildings) {
+    for (const [buildingName, items] of buildings) {
       const wrapper = document.createElement('div');
       wrapper.className = 'nav-building';
 
@@ -101,11 +101,11 @@ export class TourApp {
       const dropdown = document.createElement('div');
       dropdown.className = 'nav-dropdown';
 
-      for (const { sceneId, scene } of scenes) {
+      for (const { sceneId, entry } of items) {
         const btn = document.createElement('button');
         btn.className = 'nav-btn';
         btn.dataset.scene = sceneId;
-        btn.textContent = scene.floor ?? scene.title;
+        btn.textContent = entry.floor;
         btn.addEventListener('click', () => {
           wrapper.classList.remove('open');
           trigger.setAttribute('aria-expanded', 'false');
@@ -121,7 +121,6 @@ export class TourApp {
   }
 
   init() {
-    this.#registry.validate(this.#config);
     this.#buildNav();
 
     document.addEventListener('click', (e) => {
@@ -142,14 +141,23 @@ export class TourApp {
     this.loadScene(initial, { pushState: false });
   }
 
-  loadScene(sceneId, { pushState = true } = {}) {
-    const scene = this.#config.scenes[sceneId];
-    if (!scene) {
-      console.warn('Scene not found:', sceneId);
-      this.#titleEl.textContent = 'Scene not found';
-      this.#panel.show('<p style="color:#fff;padding:1rem">Sorry, this location could not be loaded.</p>');
-      return;
+  async loadScene(sceneId, { pushState = true } = {}) {
+    // Lazy load — fetch the building file if this scene isn't cached yet
+    if (!this.#config.scenes[sceneId]) {
+      const entry = this.#config.sceneIndex[sceneId];
+      if (!entry) {
+        console.warn('Scene not found:', sceneId);
+        this.#titleEl.textContent = 'Scene not found';
+        this.#panel.show('<p style="color:#fff;padding:1rem">Sorry, this location could not be loaded.</p>');
+        return;
+      }
+      // Browser caches the module — same file is never fetched twice
+      const scenes = await entry.load();
+      this.#registry.validate(scenes);
+      Object.assign(this.#config.scenes, scenes);
     }
+
+    const scene = this.#config.scenes[sceneId];
 
     if (pushState) {
       history.pushState({ scene: sceneId }, '', `?scene=${sceneId}`);

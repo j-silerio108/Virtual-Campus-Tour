@@ -91,8 +91,8 @@ export class HotspotRendererRegistry {
    * Call this once after all renderers are registered, before TourApp.init().
    * @param {object} config  TOUR_CONFIG
    */
-  validate(config) {
-    for (const [sceneId, scene] of Object.entries(config.scenes)) {
+  validate(scenes) {
+    for (const [sceneId, scene] of Object.entries(scenes)) {
       for (const hs of scene.hotSpots ?? []) {
         if (hs.type !== 'info') continue;
         const kind = hs.clickHandlerArgs?.kind;
