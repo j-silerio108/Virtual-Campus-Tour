@@ -66,8 +66,10 @@ export class PannellumAdapter extends ViewerAdapter {
         if (!el) return;
         if (hs.type === 'scene') {
           el.addEventListener('click', () => onNavigate(hs.sceneId));
-        } else {
+        } else if (hs.clickHandlerArgs) {
           el.addEventListener('click', () => onHotspotClick(hs.clickHandlerArgs));
+        } else {
+          console.warn(`Hotspot ${i} ("${hs.text}") has no clickHandlerArgs — click ignored`);
         }
       });
 

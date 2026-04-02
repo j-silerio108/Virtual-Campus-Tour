@@ -87,6 +87,24 @@ export class HotspotRendererRegistry {
   }
 
   /**
+   * Warn at startup about any hotspot kinds that have no registered renderer.
+   * Call this once after all renderers are registered, before TourApp.init().
+   * @param {object} config  TOUR_CONFIG
+   */
+  validate(config) {
+    for (const [sceneId, scene] of Object.entries(config.scenes)) {
+      for (const hs of scene.hotSpots ?? []) {
+        if (hs.type !== 'info') continue;
+        const kind = hs.clickHandlerArgs?.kind;
+        if (!kind) continue; // already caught by viewer.js
+        if (!this.#renderers.has(kind)) {
+          console.warn(`Unknown hotspot kind "${kind}" in scene "${sceneId}" (text: "${hs.text}") — no renderer registered`);
+        }
+      }
+    }
+  }
+
+  /**
    * Render a hotspot. Throws if no renderer is registered for args.kind.
    * @param {object} args
    * @returns {string} HTML string

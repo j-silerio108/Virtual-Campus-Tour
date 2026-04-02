@@ -349,3 +349,27 @@ main {
   line-height: 1.6;
 }
 .modal-detail strong { color: var(--blue); }
+
+/* ── Mobile / Responsive ── */
+@media (max-width: 600px) {
+  .header-inner {
+    flex-wrap: wrap;
+    gap: 0.4rem;
+  }
+
+  .logo-tag {
+    display: none;
+  }
+
+  nav {
+    flex-wrap: wrap;
+  }
+
+  .info-panel {
+    width: 100%;
+  }
+
+  .help-finder {
+    padding: 0.5rem 1rem;
+  }
+}

@@ -43,7 +43,7 @@ export class HelpFinder {
     if (!data) return;
 
     this.#content.innerHTML = `
-      <div class="modal-emoji">${data.emoji}</div>
+      <div class="modal-emoji">${escapeHtml(data.emoji)}</div>
       <div class="modal-title">You need help with: ${escapeHtml(data.need)}</div>
       <div class="modal-office">→ Go to: <strong>${escapeHtml(data.office)}</strong></div>
       <p class="modal-desc">${escapeHtml(data.description)}</p>

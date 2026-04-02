@@ -40,6 +40,7 @@ export class TourApp {
   #adapter;     // ViewerAdapter — no knowledge of which library is used
   #container;
   #titleEl;
+  #navEl;
   #navSelector;
 
   /**
@@ -50,11 +51,13 @@ export class TourApp {
    * @param {object}                  domConfig
    * @param {string}                  domConfig.containerId
    * @param {string}                  domConfig.titleId
+   * @param {string}                  domConfig.navId       Container where nav buttons are injected
    * @param {string}                  domConfig.navSelector
    */
   constructor(config, registry, panel, adapter, {
     containerId  = 'panorama',
     titleId      = 'scene-title',
+    navId        = 'scene-nav',
     navSelector  = '.nav-btn[data-scene]'
   } = {}) {
     this.#config      = config;
@@ -63,17 +66,30 @@ export class TourApp {
     this.#adapter     = adapter;
     this.#container   = document.getElementById(containerId);
     this.#titleEl     = document.getElementById(titleId);
+    this.#navEl       = document.getElementById(navId);
     this.#navSelector = navSelector;
 
     if (!this.#container) throw new Error(`TourApp: element #${containerId} not found`);
     if (!this.#titleEl)   throw new Error(`TourApp: element #${titleId} not found`);
   }
 
-  init() {
-    document.querySelectorAll(this.#navSelector).forEach(btn => {
-      btn.addEventListener('click', () => this.loadScene(btn.dataset.scene));
-    });
+  #buildNav() {
+    if (!this.#navEl) return;
+    this.#navEl.innerHTML = '';
+    for (const [sceneId, scene] of Object.entries(this.#config.scenes)) {
+      if (!scene.nav) continue;
+      const btn = document.createElement('button');
+      btn.className = 'nav-btn';
+      btn.dataset.scene = sceneId;
+      btn.textContent = scene.title;
+      btn.addEventListener('click', () => this.loadScene(sceneId));
+      this.#navEl.appendChild(btn);
+    }
+  }
 
+  init() {
+    this.#registry.validate(this.#config);
+    this.#buildNav();
     this.loadScene(this.#config.default.firstScene);
   }
 
@@ -81,6 +97,8 @@ export class TourApp {
     const scene = this.#config.scenes[sceneId];
     if (!scene) {
       console.warn('Scene not found:', sceneId);
+      this.#titleEl.textContent = 'Scene not found';
+      this.#panel.show('<p style="color:#fff;padding:1rem">Sorry, this location could not be loaded.</p>');
       return;
     }
 
@@ -96,7 +114,7 @@ export class TourApp {
     this.#adapter.mount(
       this.#container.id,
       scene.panorama,
-      scene.hotSpots,
+      scene.hotSpots ?? [],
       (args) => this.#panel.show(this.#registry.render(args)),
       (sceneId) => this.loadScene(sceneId)
     );

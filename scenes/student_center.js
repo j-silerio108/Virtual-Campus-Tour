@@ -7,6 +7,7 @@ export const STUDENT_CENTER_SCENES = {
 
   student_center: {
     title: "Student Center",
+    nav: true,
     panorama: "images/newman_lobby_4k.jpg",
     hotSpots: [
 
@@ -142,6 +143,7 @@ export const STUDENT_CENTER_SCENES = {
 
   the_pod: {
     title: "The Pod store",
+    nav: true,
     panorama: "images/ferndale_studio_04_4k.png",
     hotSpots: [
       {
