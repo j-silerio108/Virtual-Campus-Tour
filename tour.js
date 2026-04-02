@@ -90,16 +90,27 @@ export class TourApp {
   init() {
     this.#registry.validate(this.#config);
     this.#buildNav();
-    this.loadScene(this.#config.default.firstScene);
+
+    window.addEventListener('popstate', (e) => {
+      const sceneId = e.state?.scene ?? this.#config.default.firstScene;
+      this.loadScene(sceneId, { pushState: false });
+    });
+
+    const initial = new URLSearchParams(location.search).get('scene') ?? this.#config.default.firstScene;
+    this.loadScene(initial, { pushState: false });
   }
 
-  loadScene(sceneId) {
+  loadScene(sceneId, { pushState = true } = {}) {
     const scene = this.#config.scenes[sceneId];
     if (!scene) {
       console.warn('Scene not found:', sceneId);
       this.#titleEl.textContent = 'Scene not found';
       this.#panel.show('<p style="color:#fff;padding:1rem">Sorry, this location could not be loaded.</p>');
       return;
+    }
+
+    if (pushState) {
+      history.pushState({ scene: sceneId }, '', `?scene=${sceneId}`);
     }
 
     this.#titleEl.textContent = scene.title;
