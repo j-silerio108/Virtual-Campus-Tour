@@ -3,6 +3,8 @@
 //  InfoPanel and TourApp classes.
 // ─────────────────────────────────────────────
 
+import { t } from './panel-templates.js';
+
 // ── Info Panel ──────────────────────────────
 
 export class InfoPanel {
@@ -165,7 +167,7 @@ export class TourApp {
       if (!entry) {
         console.warn('Scene not found:', sceneId);
         this.#titleEl.textContent = 'Scene not found';
-        this.#panel.show('<p style="color:#fff;padding:1rem">Sorry, this location could not be loaded.</p>');
+        this.#panel.show(t.error('Sorry, this location could not be loaded.'));
         return;
       }
       // Reuse an in-flight promise so rapid clicks don't double-fetch
@@ -182,7 +184,7 @@ export class TourApp {
       } catch (err) {
         console.error('Failed to load scene:', sceneId, err);
         this.#titleEl.textContent = 'Scene unavailable';
-        this.#panel.show('<p style="color:#fff;padding:1rem">Sorry, this location could not be loaded. Please try again.</p>');
+        this.#panel.show(t.error('Sorry, this location could not be loaded. Please try again.'));
         return;
       }
     }

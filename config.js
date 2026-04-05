@@ -8,6 +8,8 @@
 
 import { SCENE_INDEX } from './scenes/index.js';
 
+export const DEBUG = new URLSearchParams(location.search).get('debug') === 'true';
+
 export const TOUR_CONFIG = {
 
   // ── Default starting scene ──

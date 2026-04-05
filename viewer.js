@@ -7,7 +7,7 @@
 //  create a new adapter — do not touch TourApp.
 // ─────────────────────────────────────────────
 
-const DEBUG = new URLSearchParams(location.search).get('debug') === 'true';
+import { DEBUG } from './config.js';
 
 // ── Abstract base ──────────────────────────────────────────────────
 

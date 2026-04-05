@@ -25,4 +25,5 @@ export const t = {
   description: (text)         => text     ? `<p class="panel-description">${e(text)}</p>`                              : '',
   hours:       (hours)        => hours    ? `<div class="panel-hours"><h4>Hours</h4><p>${e(hours)}</p></div>`           : '',
   contact:     (contact)      => contact  ? `<p class="panel-contact">📧 ${e(contact)}</p>`                            : '',
+  error:       (message)      => `<p class="panel-error">${e(message)}</p>`,
 };

@@ -5,7 +5,7 @@
 //  concrete classes exist and how they connect.
 // ─────────────────────────────────────────────
 
-import { TOUR_CONFIG }                    from './config.js';
+import { TOUR_CONFIG, DEBUG }             from './config.js';
 import { hotspotRegistry }               from './hotspots.js';
 import { InfoPanel, TourApp }            from './tour.js';
 import { PannellumAdapter }              from './viewer.js';
@@ -16,7 +16,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   const panel   = new InfoPanel('info-panel', 'panel-content');
   const adapter = new PannellumAdapter();
-  if (new URLSearchParams(location.search).get('debug') === 'true') {
+  if (DEBUG) {
     window._adapter = adapter; // dev helper: type _adapter.getPitchYaw() in the console
   }
 
